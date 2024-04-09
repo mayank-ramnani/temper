@@ -2,8 +2,13 @@
 import argparse
 import re
 import subprocess
+import json
+import time
+
+output_db = {}
 
 # gets output from stderr if stdout is empty
+# gets output from stdout if stderr is empty
 # `gcc -v` writes output to stderr
 # output is split into a list of lines
 def run_shell_command(command):
@@ -18,9 +23,11 @@ def run_shell_command(command):
             else:
                 return result.stderr.strip().split('\n')
         else:
+            if result.stderr:
             # If the command failed, print error message
-            print("Error:", result.stderr.strip().split('\n'))
-            return None
+                return result.stderr.strip().split('\n')
+            else:
+                return result.stdout.strip.split('\n')
     except Exception as e:
         print("Error:", e)
         return None
@@ -29,9 +36,6 @@ def run_shell_command(command):
 def extract_compiler_options(makefile_path):
     print("Makefile path: ", makefile_path)
     compiler_options = set()
-
-    with open(makefile_path, 'r') as f:
-        lines = f.readlines()
 
     for line in lines:
         # Match lines starting with "CFLAGS", "CXXFLAGS", or "CPPFLAGS"
@@ -47,11 +51,14 @@ def extract_compiler_options(makefile_path):
 def get_compiler():
     output = run_shell_command("gcc -v")
     if output is not None:
-        return output[0]
+        for line in output:
+            if "version" in line:
+                print(line)
+                return line
 
-def get_compiler_default_opts():
+def get_compiler_default_opts(compiler):
     compiler_opts = []
-    build_command = "gcc -v hello.c -o hello"
+    build_command = compiler + " -v hello.c -o hello"
     output = run_shell_command(build_command)
     if output is not None:
         remove_command = "rm -f hello"
@@ -75,18 +82,107 @@ def get_makefile_opts(makefile):
         print(option)
     print(get_compiler_default_opts())
 
+def extract_cc_value(makefile_lines):
+    compiler_options = set()
 
+    for line in makefile_lines:
+        # Match lines starting with "CC"
+        match = re.match(r'^\s*(CC)\s*.?[=]?=\s*(.+)', line)
+        if match:
+            cc_value = match.group(2).strip()
+            print(cc_value) 
+            return cc_value
+
+def get_configured_compiler(makefile_lines):
+    # Find the configured compiler
+# get value of CC
+    cc_value = extract_cc_value(makefile_lines)
+    if not cc_value:
+        default_make_output = run_shell_command("make -p")
+# if it is not defined, run `make -p` and get its value from the default set
+# run `$CC --version` to find the compiler being used
+
+    # parser.add_argument('--compiler', help='Print compiler', required=False, action='store_true')
+    # parser.add_argument('--default-opts', help='Print compiler default options', 
+    # required=False, action='store_true')
 def main():
-    # Argument parser setup
-    parser = argparse.ArgumentParser(description='Extract enabled compiler options from a Makefile')
-    parser.add_argument('--compiler', help='Print compiler', required=False)
-    parser.add_argument('--default-opts', help='Print compiler default options', required=False)
-    parser.add_argument('--makefile', help='Path to the Makefile', required=True)
+    parser = argparse.ArgumentParser(description="Temper: Harden your C/C++\
+                                     projects")
+    parser.add_argument('-l', '--list', help='List options in database',
+                        required=False, action='store_true')
+    parser.add_argument('--show', help='Show configured options in\
+                        Makefile', required=False, action='store_true')
+    parser.add_argument('-o', '--output', help='Store configured\
+            options in json output file', required=False, action='store_true')
+    parser.add_argument('--apply', help='Apply recommended options to\
+                        Makefile', required=False, action='store_true')
+    parser.add_argument('-m', '--makefile', help='Path to Makefile',
+                        required=False)
+    # parser.add_argument('-o', '--output', help='Output', required=True)
     args = parser.parse_args()
 
-    get_makefile_opts(args.makefile)
+    # if args.compiler:
+    #    get_compiler()
+    # if args.default_opts:
+    #    get_compiler_default_opts()
+    if args.makefile:
+        # read makefile and pass the lines for processing
+        with open(args.makefile, 'r') as f:
+            output_db["makefile"] = args.makefile
+            timestamp = int(time.time())
+            output_db["timestamp"] = timestamp
+            makefile_lines = f.readlines()
+            # get_configured_compiler(lines)
+            cc_value = ""
+            for line in makefile_lines:
+                # Match lines starting with "CC"
+                match = re.match(r'^\s*(CC)\s*.?[=]?=\s*(.+)', line)
+                if match:
+                    cc_value = match.group(2).strip()
+                    # print(cc_value) 
+            if not cc_value:
+                # print("didn't find compiler in makefile")
+                # need to specify argument of makefile to make the command not
+                # error out
+                default_make_output = run_shell_command("make -p " +
+                                                        args.makefile)
+                for line in default_make_output:
+                    # Match lines starting with "CC"
+                    match = re.match(r'^\s*(CC)\s*.?[=]?=\s*(.+)', line)
+                    if match:
+                        cc_value = match.group(2).strip()
+                        # print(cc_value) 
+                        # TODO: get full path of the compiler, currently output
+                        # is just "cc". might be able to run which "cc"
+
+            output_db["compiler"] = cc_value
+            # 3. get default opts
+            default_opts = get_compiler_default_opts(cc_value)
+            output_db["default_opts"] = default_opts
+
+            # 4. get configured opts
+            configured_opts = set()
+
+            for line in makefile_lines:
+                # Match lines starting with "CFLAGS", "CXXFLAGS", or "CPPFLAGS"
+                # match = re.match(r'^\s*(CFLAGS|CXXFLAGS|CPPFLAGS)\s*[:]?=\s*(.+)', line)
+                match = re.match(r'^\s*(CFLAGS|CXXFLAGS|CPPFLAGS)\s*.?[=]?=\s*(.+)', line)
+                if match:
+                    options = match.group(2).strip().split()
+                    for option in options:
+                        configured_opts.add(option)
+            output_db["configured_opts"] = list(configured_opts)
+            # set is not directly serializable in python
+            output_file = "output-" + str(timestamp) + ".json"
+            with open(output_file, 'w') as fp:
+                json_formatted_str = json.dumps(output_db, indent=4)
+                print(json_formatted_str)
+                fp.write(json_formatted_str)
 
 if __name__ == "__main__":
     main()
 
 # TODO: check if it starts with '-' each compiler option
+# TODO: add ascii art
+    # TODO: add the default enabled compiler options in the set as well
+    # TODO: mention the version of gcc/clang being used in the project
