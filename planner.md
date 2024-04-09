@@ -16,4 +16,7 @@
     b. add the options to an array; add array to a key "configured_opts" in the json output db
 5. add timestamp to the output json db - "timestamp"
 6. write the json db to file - "options-timestamp.json"
-7. 
+7. add support for giving recommendations
+    a. get input json from user
+    b. read db.json
+    c. diff the options, and give recommendations
