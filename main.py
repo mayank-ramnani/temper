@@ -118,6 +118,9 @@ def main():
                         Makefile', required=False, action='store_true')
     parser.add_argument('-m', '--makefile', help='Path to Makefile',
                         required=False)
+    parser.add_argument('-i', '--input-json-path', help='Path to input json\
+                        generated from tool',
+                        required=False)
     # parser.add_argument('-o', '--output', help='Output', required=True)
     args = parser.parse_args()
 
@@ -178,6 +181,31 @@ def main():
                 json_formatted_str = json.dumps(output_db, indent=4)
                 print(json_formatted_str)
                 fp.write(json_formatted_str)
+            
+    if args.input_json_path:
+        db_json = {}
+        with open("db.json", 'r') as db:
+            db_json = json.load(db)
+        
+        input_json = {}
+        with open(args.input_json_path, 'r') as ij:
+            input_json = json.load(ij)
+        
+        default_opts = input_json["default_opts"]
+        configured_opts = input_json["configured_opts"]
+
+        recommended_opts = db_json["options"]["recommended"]
+        recommendations = []
+        for opt in recommended_opts:
+            if opt["opt"] in default_opts:
+                print("Found in default opts: ", opt["opt"])
+            elif opt["opt"] in configured_opts:
+                print("Found in configured opts: ", opt["opt"])
+            else: # recommend addition
+                recommendations.append(opt)
+
+        print("Recommendations:")
+        print(json.dumps(recommendations, indent=4))
 
 if __name__ == "__main__":
     main()
@@ -186,3 +214,4 @@ if __name__ == "__main__":
 # TODO: add ascii art
     # TODO: add the default enabled compiler options in the set as well
     # TODO: mention the version of gcc/clang being used in the project
+    # TODO: reformat code, make everything functional
