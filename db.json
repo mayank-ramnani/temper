@@ -1,0 +1,22 @@
+{
+    "options": {
+        "recommended": [
+            {
+                "opt": "-O2",
+                "desc": ""
+            },
+            {
+                "opt": "-Wall",
+                "desc": ""
+            },
+            {
+                "opt": "-Wformat",
+                "desc": ""
+            },
+            {
+                "opt": "-fstack-protector-strong",
+                "desc": "Enable run-time checks for stack-based buffer overflows. Can impact performance."
+            }
+        ]
+    }
+}
