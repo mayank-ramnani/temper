@@ -3,20 +3,22 @@
         "recommended": [
             {
                 "opt": "-O2",
-                "desc": ""
+                "desc": "Optimize compilation - Level 2"
             },
             {
                 "opt": "-Wall",
-                "desc": ""
+                "desc": "Enable all compiler warnings"
             },
             {
                 "opt": "-Wformat",
-                "desc": ""
+                "desc": "Check calls to printf and scanf, etc., to make sure that the arguments supplied have types appropriate to the format string specified"
             },
             {
                 "opt": "-fstack-protector-strong",
                 "desc": "Enable run-time checks for stack-based buffer overflows. Can impact performance."
             }
-        ]
+        ],
+        "discouraged": [],
+        "sanitizers": []
     }
 }

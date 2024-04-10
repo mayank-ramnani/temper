@@ -179,8 +179,32 @@ def main():
             output_file = "output-" + str(timestamp) + ".json"
             with open(output_file, 'w') as fp:
                 json_formatted_str = json.dumps(output_db, indent=4)
-                print(json_formatted_str)
+                print("Write compiler options in json:", output_file)
+                # print(json_formatted_str)
                 fp.write(json_formatted_str)
+            db_json = {}
+            with open("db.json", 'r') as db:
+                db_json = json.load(db)
+            
+            input_json = {}
+            with open(output_file, 'r') as ij:
+                input_json = json.load(ij)
+            
+            default_opts = input_json["default_opts"]
+            configured_opts = input_json["configured_opts"]
+
+            recommended_opts = db_json["options"]["recommended"]
+            recommendations = []
+            for opt in recommended_opts:
+                if opt["opt"] in default_opts:
+                    print("Found in default opts: ", opt["opt"])
+                elif opt["opt"] in configured_opts:
+                    print("Found in configured opts: ", opt["opt"])
+                else: # recommend addition
+                    recommendations.append(opt)
+
+            print("Recommendations:")
+            print(json.dumps(recommendations, indent=4))
             
     if args.input_json_path:
         db_json = {}
