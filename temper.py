@@ -107,20 +107,22 @@ def get_configured_compiler(makefile_lines):
     # required=False, action='store_true')
 def main():
     parser = argparse.ArgumentParser(description="Temper: Harden your C/C++\
-                                     projects")
-    parser.add_argument('-l', '--list', help='List options in database',
+                                     projects - Analyse and find secure\
+                                     compiler options for your makefile")
+    parser.add_argument('-m', '--makefile', help='Path to Makefile to analyse\
+                        and get recommendations',
+                        required=False)
+    parser.add_argument('-i', '--input-json-path', help='Path to input json\
+                        generated from tool to get recommendations',
+                        required=False)
+    parser.add_argument('-o', '--output', help='Store configured\
+                        options in json output file', required=False, action='store_true')
+    parser.add_argument('--apply', help='Apply recommended options to\
+                        Makefile', required=False, action='store_true')
+    parser.add_argument('-l', '--list', help='List compiler options in OpenSSF database',
                         required=False, action='store_true')
     parser.add_argument('--show', help='Show configured options in\
                         Makefile', required=False, action='store_true')
-    parser.add_argument('-o', '--output', help='Store configured\
-            options in json output file', required=False, action='store_true')
-    parser.add_argument('--apply', help='Apply recommended options to\
-                        Makefile', required=False, action='store_true')
-    parser.add_argument('-m', '--makefile', help='Path to Makefile',
-                        required=False)
-    parser.add_argument('-i', '--input-json-path', help='Path to input json\
-                        generated from tool',
-                        required=False)
     # parser.add_argument('-o', '--output', help='Output', required=True)
     args = parser.parse_args()
 
