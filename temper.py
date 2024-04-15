@@ -115,7 +115,7 @@ def main():
     parser.add_argument('-i', '--input-json-path', help='Path to input json\
                         generated from tool to get recommendations',
                         required=False)
-    parser.add_argument('-o', '--output', help='Store configured\
+    parser.add_argument('-o', '--output', help='Store analysed\
                         options in json output file', required=False, action='store_true')
     parser.add_argument('--apply', help='Apply recommended options to\
                         Makefile', required=False, action='store_true')
