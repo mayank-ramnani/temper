@@ -4,7 +4,9 @@ Compiler Hardening for C/C++ based on the [OpenSSF Compiler Hardening Guide](htt
 
 ## Usage
 Run this in your build environment, otherwise might give inaccurate results due to compiler being different than the one used in production
-```python3 temper.py --makefile <path-to-project-makefile>```
+```sh
+python3 temper.py --makefile <path-to-project-makefile>
+```
 
 ## Options
 ```sh
