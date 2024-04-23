@@ -1,5 +1,5 @@
 # planner
-## flow
+## tasks
 1. get makefile path from user
     a. write makefile path, timestamp to output json db
 2. get the configured compiler - needed to figure out compiler defaults
@@ -20,3 +20,16 @@
     a. get input json from user
     b. read db.json
     c. diff the options, and give recommendations
+
+
+
+8. add more compiler options to the `db.json` - add new types of categories as well
+9. add support for the additional arguments - detect makefile automatically, --apply option
+10. human readable output by default with an option `-v`? that gives output in json
+11. figure out how to deal with group options (O2 is absent, but O3 is present)
+12. posix vs gnu make; use spec instead of just regex
+13. testing on cmake
+14. force make to expand macros before applying regex 
+    - make dry run mode to get the configured compiler options and then parse them
+15. parse the openssf compiler guide markdown to find options
+16. add functions to compare if the required compiler option is applicable with the `required` object
