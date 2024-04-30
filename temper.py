@@ -198,12 +198,12 @@ def main():
             output_db["configured_opts"] = list(configured_opts)
             # set is not directly serializable in python
             output_file = "output-" + str(timestamp) + ".json"
-            if args.debug:
-                with open(output_file, 'w') as fp:
-                    json_formatted_str = json.dumps(output_db, indent=4)
-                    print("Write compiler options in json:", output_file)
-                    # print(json_formatted_str)
-                    fp.write(json_formatted_str)
+            #if args.debug:
+            #    with open(output_file, 'w') as fp:
+            #        json_formatted_str = json.dumps(output_db, indent=4)
+            #        print("Write compiler options in json:", output_file)
+            #        # print(json_formatted_str)
+            #        fp.write(json_formatted_str)
             
             db_json = {}
             with open("assets/db.json", 'r') as db:
@@ -228,7 +228,14 @@ def main():
                     recommendations.append(opt)
 
             print("Recommendations:")
-            # print(json.dumps(recommendations, indent=4))
+            if (args.debug):
+                with open(output_file, 'w') as fp:
+                    output_db["recommendations"] = recommendations
+                    json_formatted_str = json.dumps(output_db, indent=4)
+                    print("Write compiler options in json:", output_file)
+            #        # print(json_formatted_str)
+                    fp.write(json_formatted_str)
+            #print(json.dumps(recommendations, indent=4))
             print_list_of_dicts_as_table(recommendations)
             
     if args.input_json_path:
