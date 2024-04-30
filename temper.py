@@ -4,6 +4,8 @@ import re
 import subprocess
 import json
 import time
+from tabulate import tabulate
+import art # ascii art
 
 output_db = {}
 
@@ -33,6 +35,20 @@ def run_shell_command(command):
         return None
 
 
+def print_list_of_dicts_as_table(list_of_dicts):
+    # Extract headers from the keys of the first dictionary
+    headers = list(list_of_dicts[0].keys())
+
+    # Extract data from each dictionary and convert it into a list of lists
+    table_data = [[row[key] for key in headers] for row in list_of_dicts]
+
+    # Print table
+    # print(tabulate(table_data, headers=headers, tablefmt="fancy_grid"))
+    # print(tabulate(table_data, headers=headers, tablefmt="orgtbl"))
+    # print(tabulate(table_data, headers=headers, tablefmt="presto"))
+    print(tabulate(table_data, headers=headers, tablefmt="psql"))
+    # print(tabulate(table_data, headers=headers, tablefmt="rst"))
+
 def extract_compiler_options(makefile_path):
     print("Makefile path: ", makefile_path)
     compiler_options = set()
@@ -58,7 +74,7 @@ def get_compiler():
 
 def get_compiler_default_opts(compiler):
     compiler_opts = []
-    build_command = compiler + " -v hello.c -o hello"
+    build_command = compiler + " -v assets/hello.c -o hello"
     output = run_shell_command(build_command)
     if output is not None:
         remove_command = "rm -f hello"
@@ -106,6 +122,7 @@ def get_configured_compiler(makefile_lines):
     # parser.add_argument('--default-opts', help='Print compiler default options', 
     # required=False, action='store_true')
 def main():
+    print(art.text2art("temper"))
     parser = argparse.ArgumentParser(description="Temper: Harden your C/C++\
                                      projects - Analyse and find secure\
                                      compiler options for your makefile")
@@ -120,6 +137,8 @@ def main():
     parser.add_argument('--apply', help='Apply recommended options to\
                         Makefile', required=False, action='store_true')
     parser.add_argument('-l', '--list', help='List compiler options in OpenSSF database',
+                        required=False, action='store_true')
+    parser.add_argument('-d', '--debug', help='Debug mode',
                         required=False, action='store_true')
     parser.add_argument('--show', help='Show configured options in\
                         Makefile', required=False, action='store_true')
@@ -179,18 +198,21 @@ def main():
             output_db["configured_opts"] = list(configured_opts)
             # set is not directly serializable in python
             output_file = "output-" + str(timestamp) + ".json"
-            with open(output_file, 'w') as fp:
-                json_formatted_str = json.dumps(output_db, indent=4)
-                print("Write compiler options in json:", output_file)
-                # print(json_formatted_str)
-                fp.write(json_formatted_str)
+            if args.debug:
+                with open(output_file, 'w') as fp:
+                    json_formatted_str = json.dumps(output_db, indent=4)
+                    print("Write compiler options in json:", output_file)
+                    # print(json_formatted_str)
+                    fp.write(json_formatted_str)
+            
             db_json = {}
-            with open("db.json", 'r') as db:
+            with open("assets/db.json", 'r') as db:
                 db_json = json.load(db)
             
             input_json = {}
-            with open(output_file, 'r') as ij:
-                input_json = json.load(ij)
+            # with open(output_file, 'r') as ij:
+            #    input_json = json.load(ij)
+            input_json = output_db
             
             default_opts = input_json["default_opts"]
             configured_opts = input_json["configured_opts"]
@@ -206,7 +228,8 @@ def main():
                     recommendations.append(opt)
 
             print("Recommendations:")
-            print(json.dumps(recommendations, indent=4))
+            # print(json.dumps(recommendations, indent=4))
+            print_list_of_dicts_as_table(recommendations)
             
     if args.input_json_path:
         db_json = {}
@@ -231,7 +254,8 @@ def main():
                 recommendations.append(opt)
 
         print("Recommendations:")
-        print(json.dumps(recommendations, indent=4))
+        # print(json.dumps(recommendations, indent=4))
+
 
 if __name__ == "__main__":
     main()
