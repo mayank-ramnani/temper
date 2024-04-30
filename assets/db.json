@@ -24,7 +24,7 @@
       },
       {
         "opt": "-Wformat",
-        "desc": "Check calls to printf and scanf, etc., to make sure that the arguments supplied have types appropriate to the format string specified",
+        "desc": "Check calls to printf and scanf, etc., to make sure that the arguments \nsupplied have types appropriate to the format string specified",
         "requires": {
           "gcc": "2.95.3",
           "clang": "4.0"
@@ -70,7 +70,7 @@
       },
       {
         "opt": "-Werror",
-        "desc": "Treat all or selected compiler warnings as errors. Use the blanket form -Werror only during development, not in source distribution.",
+        "desc": "Treat all or selected compiler warnings as errors. \nUse the blanket form -Werror only during development, not in source distribution.",
         "requires": {
           "gcc": "2.95.3",
           "clang": "2.6"
@@ -102,7 +102,7 @@
       },
       {
         "opt": "-D_FORTIFY_SOURCE=3",
-        "desc": "Fortify sources with compile and run-time checks for unsafe libc usage and buffer overflows. Some fortification levels can impact performance.",
+        "desc": "Fortify sources with compile and run-time checks for unsafe libc usage and buffer overflows. \nSome fortification levels can impact performance. \nRequires O1 or above.",
         "requires": {
           "gcc": "12.0",
           "clang": "9.0.0"
@@ -126,7 +126,7 @@
       },
       {
         "opt": "-fstrict-flex-arrays=3",
-        "desc": "Consider a trailing array in a struct as a flexible array if declared as []\n",
+        "desc": "Consider a trailing array in a struct as a flexible array if declared as []",
         "requires": {
           "gcc": "13",
           "clang": "16.0.0"
@@ -134,7 +134,7 @@
       },
       {
         "opt": "-fstack-clash-protection",
-        "desc": "Enable run-time checks for variable-size stack allocation validity. Can impact performance.\n",
+        "desc": "Enable run-time checks for variable-size stack allocation validity.\nCan impact performance.",
         "requires": {
           "gcc": "8",
           "clang": "11.0.0"
@@ -142,7 +142,7 @@
       },
       {
         "opt": "-fstack-protector-strong",
-        "desc": "Enable run-time checks for stack-based buffer overflows. Can impact performance.\n",
+        "desc": "Enable run-time checks for stack-based buffer overflows. Can impact performance.",
         "requires": {
           "gcc": "4.9.0",
           "clang": "5.0.0"
@@ -150,7 +150,7 @@
       },
       {
         "opt": "-fcf-protection=full",
-        "desc": "Enable control flow protection to counter Return Oriented Programming (ROP) and Jump Oriented Programming (JOP) attacks on many x86 architectures\n",
+        "desc": "Enable control flow protection to counter Return Oriented Programming (ROP) and \nJump Oriented Programming (JOP) attacks on many x86 architectures\n",
         "requires": {
           "gcc": "8",
           "clang": "7.0.0"
@@ -158,7 +158,7 @@
       },
       {
         "opt": "-mbranch-protection=standard",
-        "desc": "Enable branch protection to counter Return Oriented Programming (ROP) and Jump Oriented Programming (JOP) attacks on AArch64\n",
+        "desc": "Enable branch protection to counter Return Oriented Programming (ROP) and \nJump Oriented Programming (JOP) attacks on AArch64\n",
         "requires": {
           "gcc": "9",
           "clang": "8"
@@ -218,14 +218,14 @@
       },
       {
         "opt": "-Wl,-z,now",
-        "desc": "Mark relocation table entries resolved at load-time as read-only. -Wl,-z,now can impact startup performance",
+        "desc": "Mark relocation table entries resolved at load-time as read-only. -Wl,-z,now \ncan impact startup performance",
         "requires": {
           "binutils": "2.15"
         }
       },
       {
         "opt": "-fPIE -pie",
-        "desc": "Build as position-independent executable. Can impact performance on 32-bit architectures.",
+        "desc": "Build as position-independent executable. \nCan impact performance on 32-bit architectures.",
         "requires": {
           "binutils": "2.16",
           "clang": "5.0.0"
@@ -233,7 +233,7 @@
       },
       {
         "opt": "-fPIE -shared",
-        "desc": "Build as position-independent executable. Can impact performance on 32-bit architectures.",
+        "desc": "Build as position-independent executable. \nCan impact performance on 32-bit architectures.",
         "requires": {
           "binutils": "<2.6",
           "clang": "5.0.0"
