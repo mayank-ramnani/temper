@@ -261,7 +261,6 @@ if __name__ == "__main__":
     main()
 
 # TODO: check if it starts with '-' each compiler option
-# TODO: add ascii art
     # TODO: add the default enabled compiler options in the set as well
     # TODO: mention the version of gcc/clang being used in the project
     # TODO: reformat code, make everything functional
