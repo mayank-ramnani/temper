@@ -10,6 +10,18 @@ python3 temper.py --makefile <path-to-project-makefile>
 
 ## Options
 ```sh
+ _
+| |_   ___  _ __ ___   _ __    ___  _ __
+| __| / _ \| '_ ` _ \ | '_ \  / _ \| '__|
+| |_ |  __/| | | | | || |_) ||  __/| |
+ \__| \___||_| |_| |_|| .__/  \___||_|
+                      |_|
+
+usage: temper.py [-h] [-m MAKEFILE] [-i INPUT_JSON_PATH] [-o] [--apply] [-l] [-d] [--show]
+
+Temper: Harden your C/C++ projects - Analyse and find secure compiler options for your makefile
+
+options:
   -h, --help            show this help message and exit
   -m MAKEFILE, --makefile MAKEFILE
                         Path to Makefile to analyse and get recommendations
@@ -18,27 +30,15 @@ python3 temper.py --makefile <path-to-project-makefile>
   -o, --output          Store analysed options in json output file
   --apply               Apply recommended options to Makefile
   -l, --list            List compiler options in OpenSSF database
+  -d, --debug           Debug mode
   --show                Show configured options in Makefile
 ```
 
 ## Example
-```sh
-╰─ temper -m example-makefiles/Makefile.OpenWAF
-Write compiler options in json: output-1713221129.json
-Found in configured opts:  -Wall
-Recommendations:
-[
-    {
-        "opt": "-O2",
-        "desc": "Optimize compilation - Level 2"
-    },
-    {
-        "opt": "-Wformat",
-        "desc": "Check calls to printf and scanf, etc., to make sure that the arguments supplied have types appropriate to the format string specified"
-    },
-    {
-        "opt": "-fstack-protector-strong",
-        "desc": "Enable run-time checks for stack-based buffer overflows. Can impact performance."
-    }
-]
-```
+![image](docs/images/example.png)
+
+## Extra
+- Database Updater Scraper: extra/scraper.py
+    + Fetches OpenSSF Compiler Options HTML page
+    + Extracts all tables using BeautifulSoup4
+    + Extracted the relevant tables for recommended compiler options to create db.json file
