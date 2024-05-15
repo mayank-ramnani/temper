@@ -58,7 +58,7 @@ def extract_versions(input_string):
     # Clang version
     clang_match = clang_pattern.search(input_string)
     if clang_match:
-        versions['clang'] = float(clang_match.group(1))
+        versions['clang'] = clang_match.group(1)
 
     return versions
 
