@@ -25,7 +25,12 @@ def table_to_dicts(table):
     # rows to dictionaries
     data = []
     for row in rows:
-        row_data = [cell.get_text() for cell in row.find_all('td')]
+        row_data = []
+        for cell in row.find_all('td'):
+            for r in cell:
+                if (r.string is None):
+                    r.string = ' '
+            row_data.append(cell.get_text())
         row_dict = dict(zip(headers, row_data))
         data.append(row_dict)
     return data
@@ -33,10 +38,12 @@ def table_to_dicts(table):
 def convert_to_json(table_data):
     json_data = []
     for entry in table_data:
-        flags = entry['Compiler Flag'].split('-')[1:]
+        # print(entry)
+        # flags = entry['Compiler Flag'].split(' ')[1:]
+        flags = [entry['Compiler Flag']]
         for flag in flags:
             json_entry = {
-                    "opt": f"-{flag}",
+                    "opt": f"{flag}",
                     "desc": entry['Description'],
                     "requires": extract_versions(entry['Supported since'])
                     }
