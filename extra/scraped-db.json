@@ -6,7 +6,7 @@
                 "desc": "Enable warnings for constructs often associated with defects",
                 "requires": {
                     "gcc": "2.95.3",
-                    "clang": "4.0"
+                    "clang": "4.0.0"
                 }
             },
             {
@@ -14,7 +14,7 @@
                 "desc": "Enable additional format function warnings",
                 "requires": {
                     "gcc": "2.95.3",
-                    "clang": "4.0"
+                    "clang": "4.0.0"
                 }
             },
             {
@@ -22,32 +22,37 @@
                 "desc": "Enable implicit conversion warnings",
                 "requires": {
                     "gcc": "2.95.3",
-                    "clang": "4.0"
+                    "clang": "4.0.0"
                 }
             },
             {
                 "opt": "-Wtrampolines",
                 "desc": "Enable warnings about trampolines that require executable stacks",
-                "requires": {}
+                "requires": {
+                    "gcc": "4.3.0"
+                }
             },
             {
                 "opt": "-Wimplicit-fallthrough",
                 "desc": "Warn when a switch case falls through",
                 "requires": {
-                    "clang": "4.0"
+                    "gcc": "7.0.0",
+                    "clang": "4.0.0"
                 }
             },
             {
                 "opt": "-Wbidi-chars=any",
                 "desc": "Enable warnings for possibly misleading Unicode bidirectional control characters",
-                "requires": {}
+                "requires": {
+                    "gcc": "12.0.0"
+                }
             },
             {
-                "opt": "-Werror  ",
+                "opt": "-Werror ",
                 "desc": "Treat all or selected compiler warnings as errors. Use the blanket form -Werror only during development, not in source distribution.",
                 "requires": {
                     "gcc": "2.95.3",
-                    "clang": "2.6"
+                    "clang": "2.6.0"
                 }
             },
             {
@@ -55,7 +60,7 @@
                 "desc": "Treat format strings that are not string literals and used without arguments as errors",
                 "requires": {
                     "gcc": "2.95.3",
-                    "clang": "4.0"
+                    "clang": "4.0.0"
                 }
             },
             {
@@ -63,33 +68,39 @@
                 "desc": "Treat obsolete C constructs as errors",
                 "requires": {
                     "gcc": "2.95.3",
-                    "clang": "2.6"
+                    "clang": "2.6.0"
                 }
             },
             {
                 "opt": "-D_FORTIFY_SOURCE=3  (requires -O1 or higher,   may require prepending -U_FORTIFY_SOURCE)",
                 "desc": "Fortify sources with compile- and run-time checks for unsafe libc usage and buffer overflows. Some fortification levels can impact performance.",
                 "requires": {
-                    "clang": "9.0"
+                    "gcc": "12.0.0",
+                    "clang": "9.0.0"
                 }
             },
             {
                 "opt": "-D_GLIBCXX_ASSERTIONS -D_LIBCPP_ASSERT",
                 "desc": "Precondition checks for C++ standard library calls. Can impact performance.",
-                "requires": {}
+                "requires": {
+                    "libc++": "3.3.0",
+                    "libstdc++": "6.0.0"
+                }
             },
             {
                 "opt": "-fstrict-flex-arrays=3",
                 "desc": "Consider a trailing array in a struct as a flexible array if declared as []",
                 "requires": {
-                    "clang": "16.0"
+                    "gcc": "13.0.0",
+                    "clang": "16.0.0"
                 }
             },
             {
                 "opt": "-fstack-clash-protection",
                 "desc": "Enable run-time checks for variable-size stack allocation validity. Can impact performance.",
                 "requires": {
-                    "clang": "11.0"
+                    "gcc": "8.0.0",
+                    "clang": "11.0.0"
                 }
             },
             {
@@ -97,75 +108,91 @@
                 "desc": "Enable run-time checks for stack-based buffer overflows. Can impact performance.",
                 "requires": {
                     "gcc": "4.9.0",
-                    "clang": "5.0"
+                    "clang": "5.0.0"
                 }
             },
             {
                 "opt": "-fcf-protection=full",
                 "desc": "Enable control flow protection to counter Return Oriented Programming (ROP) and Jump Oriented Programming (JOP) attacks on many x86 architectures",
                 "requires": {
-                    "clang": "7.0"
+                    "gcc": "8.0.0",
+                    "clang": "7.0.0"
                 }
             },
             {
                 "opt": "-mbranch-protection=standard",
                 "desc": "Enable branch protection to counter Return Oriented Programming (ROP) and Jump Oriented Programming (JOP) attacks on AArch64",
-                "requires": {}
+                "requires": {
+                    "gcc": "9.0.0",
+                    "clang": "8.0.0"
+                }
             },
             {
                 "opt": "-Wl,-z,nodlopen",
                 "desc": "Restrict dlopen(3) calls to shared objects",
-                "requires": {}
+                "requires": {
+                    "binutils": "2.10.0"
+                }
             },
             {
                 "opt": "-Wl,-z,noexecstack",
                 "desc": "Enable data execution prevention by marking stack memory as non-executable",
-                "requires": {}
+                "requires": {
+                    "binutils": "2.14.0"
+                }
             },
             {
                 "opt": "-Wl,-z,relro -Wl,-z,now",
                 "desc": "Mark relocation table entries resolved at load-time as read-only. -Wl,-z,now can impact startup performance.",
-                "requires": {}
+                "requires": {
+                    "binutils": "2.15.0"
+                }
             },
             {
                 "opt": "-fPIE -pie",
                 "desc": "Build as position-independent executable. Can impact performance on 32-bit architectures.",
                 "requires": {
-                    "clang": "5.0"
+                    "clang": "5.0.0",
+                    "binutils": "2.16.0"
                 }
             },
             {
                 "opt": "-fPIC -shared",
                 "desc": "Build as position-independent code. Can impact performance on 32-bit architectures.",
                 "requires": {
-                    "clang": "5.0"
+                    "clang": "5.0.0",
+                    "binutils": "2.6.0"
                 }
             },
             {
                 "opt": "-fno-delete-null-pointer-checks",
                 "desc": "Force retention of null pointer checks",
                 "requires": {
-                    "clang": "7.0"
+                    "gcc": "3.0.0",
+                    "clang": "7.0.0"
                 }
             },
             {
                 "opt": "-fno-strict-overflow",
                 "desc": "Integer overflow may occur",
-                "requires": {}
+                "requires": {
+                    "gcc": "4.2.0"
+                }
             },
             {
                 "opt": "-fno-strict-aliasing",
                 "desc": "Do not assume strict aliasing",
                 "requires": {
                     "gcc": "2.95.3",
-                    "clang": "18.0"
+                    "clang": "18.0.0"
                 }
             },
             {
                 "opt": "-ftrivial-auto-var-init",
                 "desc": "Perform trivial auto variable initialization",
                 "requires": {
-                    "clang": "8.0"
+                    "gcc": "12.0.0",
+                    "clang": "8.0.0"
                 }
             },
             {
@@ -173,7 +200,7 @@
                 "desc": "Enable exception propagation to harden multi-threaded C code",
                 "requires": {
                     "gcc": "2.95.3",
-                    "clang": "2.6"
+                    "clang": "2.6.0"
                 }
             }
         ]
