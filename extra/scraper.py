@@ -53,9 +53,12 @@ def convert_to_json(table_data):
 def extract_versions(input_string):
     versions = {}
 
-    # regular expressions to match GCC and Clang versions
+    # regular expressions 
     gcc_pattern = re.compile(r'GCC\s+(\d+\.\d+\.\d+)')
-    clang_pattern = re.compile(r'Clang\s+(\d+\.\d+)')
+    clang_pattern = re.compile(r'Clang\s+(\d+\.\d+\.\d+)')
+    binutils_pattern = re.compile(r'Binutils\s+(\d+\.\d+\.\d+)')
+    libcpp_pattern = re.compile(r'libc\+\+\s+(\d+\.\d+\.\d+)')
+    libstdcpp_pattern = re.compile(r'libstdc\+\+\s+(\d+\.\d+\.\d+)')
 
     # GCC version
     gcc_match = gcc_pattern.search(input_string)
@@ -66,6 +69,21 @@ def extract_versions(input_string):
     clang_match = clang_pattern.search(input_string)
     if clang_match:
         versions['clang'] = clang_match.group(1)
+
+    # binutils version
+    binutils_match = binutils_pattern.search(input_string)
+    if binutils_match:
+        versions['binutils'] = binutils_match.group(1)
+
+    # libc++ version
+    libcpp_match = libcpp_pattern.search(input_string)
+    if libcpp_match:
+        versions['libc++'] = libcpp_match.group(1)
+
+    # libstdc++ version
+    libstdcpp_match = libstdcpp_pattern.search(input_string)
+    if libstdcpp_match:
+        versions['libstdc++'] = libstdcpp_match.group(1)
 
     return versions
 
