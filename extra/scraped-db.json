@@ -1,4 +1,5 @@
 {
+    "version": "2024-05-30",
     "options": {
         "recommended": [
             {
@@ -72,8 +73,9 @@
                 }
             },
             {
-                "opt": "-D_FORTIFY_SOURCE=3  (requires -O1 or higher,   may require prepending -U_FORTIFY_SOURCE)",
-                "desc": "Fortify sources with compile- and run-time checks for unsafe libc usage and buffer overflows. Some fortification levels can impact performance.",
+                "opt": "-D_FORTIFY_SOURCE=3",
+                "desc": "Fortify sources with compile- and run-time checks for unsafe libc usage and buffer overflows. Some fortification levels can impact performance. ",
+                "prereq": "Requires -O1 or higher, may require prepending -U_FORTIFY_SOURCE.",
                 "requires": {
                     "gcc": "12.0.0",
                     "clang": "9.0.0"
