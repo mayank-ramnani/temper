@@ -4,18 +4,37 @@ import json
 import re
 
 OPENSSF_URL = "https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html"
-DB_FILE = "db.json"
+DB_FILE = "scraped-db.json"
 
-def extract_tables_from_html(url):
+# returns a BeautifulSoup object on successful scraping, else None
+def scrape_document(url):
     response = requests.get(url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        # find all <table> tags
-        tables = soup.find_all('table')
-        return tables
+        return soup
     else:
         print("Failed to fetch HTML content")
-        return []
+        return None
+
+# assuming version is in the first paragraph element
+def extract_version_from_soup(soup):
+    subtitle = soup.find('p').get_text()
+    version = ""
+    date_pattern = r'\b\d{4}-\d{2}-\d{2}\b'
+    if subtitle:
+        match = re.search(date_pattern, subtitle)
+        if match:
+            date = match.group(0)
+            return date
+        else:
+            print("No version date found in the subtitle of document.")
+    else:
+        print("No subtitle found in the document")
+
+def extract_tables_from_soup(soup):
+    # find all <table> tags
+    tables = soup.find_all('table')
+    return tables
 
 def table_to_dicts(table):
     # table headers
@@ -35,6 +54,7 @@ def table_to_dicts(table):
         data.append(row_dict)
     return data
 
+
 def convert_to_json(table_data):
     json_data = []
     for entry in table_data:
@@ -42,11 +62,21 @@ def convert_to_json(table_data):
         # flags = entry['Compiler Flag'].split(' ')[1:]
         flags = [entry['Compiler Flag']]
         for flag in flags:
-            json_entry = {
-                    "opt": f"{flag}",
-                    "desc": entry['Description'],
-                    "requires": extract_versions(entry['Supported since'])
-                    }
+            desc = entry['Description']
+            prereq = ""
+            # extract prerequisite content separately
+            index = desc.find("Requires")
+            if (index != -1):
+                prereq = desc[index:]
+                desc = desc[0:index]
+
+            json_entry = {}
+            json_entry["opt"] = flag
+            json_entry["desc"] = desc
+            if not (prereq == ""):
+                json_entry["prereq"] = prereq
+            json_entry["requires"] = extract_versions(entry['Supported since'])
+
             json_data.append(json_entry)
     return json_data
 
@@ -54,11 +84,14 @@ def extract_versions(input_string):
     versions = {}
 
     # regular expressions 
-    gcc_pattern = re.compile(r'GCC\s+(\d+\.\d+\.\d+)')
-    clang_pattern = re.compile(r'Clang\s+(\d+\.\d+\.\d+)')
-    binutils_pattern = re.compile(r'Binutils\s+(\d+\.\d+\.\d+)')
-    libcpp_pattern = re.compile(r'libc\+\+\s+(\d+\.\d+\.\d+)')
-    libstdcpp_pattern = re.compile(r'libstdc\+\+\s+(\d+\.\d+\.\d+)')
+    # NOTE: the last version node is assumed to be single digit
+    # if you need to support multiple digits, d+ can be added
+    # however, it will start including the superscript references in the version number
+    gcc_pattern = re.compile(r'GCC\s+(\d+\.\d+\.\d)')
+    clang_pattern = re.compile(r'Clang\s+(\d+\.\d+\.\d)')
+    binutils_pattern = re.compile(r'Binutils\s+(\d+\.\d+\.\d)')
+    libcpp_pattern = re.compile(r'libc\+\+\s+(\d+\.\d+\.\d)')
+    libstdcpp_pattern = re.compile(r'libstdc\+\+\s+(\d+\.\d+\.\d)')
 
     # GCC version
     gcc_match = gcc_pattern.search(input_string)
@@ -87,28 +120,37 @@ def extract_versions(input_string):
 
     return versions
 
-tables = extract_tables_from_html(OPENSSF_URL)
+def main():
+    soup = scrape_document(OPENSSF_URL)
+    if (soup):
+        # extract document version info
+        version = extract_version_from_soup(soup)
+        tables = extract_tables_from_soup(soup)
 
 # convert tables to array of dictionaries
 # we only care about tables 1 and 2 for recommended options
-tables_data = []
-recommended_data = []
-table_1 = table_to_dicts(tables[1])
-table_2 = table_to_dicts(tables[2])
+        tables_data = []
+        recommended_data = []
+        table_1 = table_to_dicts(tables[1])
+        table_2 = table_to_dicts(tables[2])
 
 # merge entries
-for entry in table_1:
-    recommended_data.append(entry)
+        for entry in table_1:
+            recommended_data.append(entry)
 
-for entry in table_2:
-    recommended_data.append(entry)
+        for entry in table_2:
+            recommended_data.append(entry)
 
 # convert table format to JSON format
-json_data = convert_to_json(recommended_data)
+        json_data = convert_to_json(recommended_data)
 
-with open(DB_FILE, "w") as fp:
-    output_db = {"options": {"recommended": json_data}}
-    json_formatted_str = json.dumps(output_db, indent=4)
-    print("Write compiler options in json:", DB_FILE)
-    # print(json_formatted_str)
-    fp.write(json_formatted_str)
+        with open(DB_FILE, "w") as fp:
+            output_db = {"version": version, "options": {"recommended": json_data}}
+            json_formatted_str = json.dumps(output_db, indent=4)
+            print("Write compiler options in json:", DB_FILE)
+            # print(json_formatted_str)
+            fp.write(json_formatted_str)
+
+
+if __name__ == "__main__":
+    main()
