@@ -2,46 +2,48 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+from typing import Optional, List, Dict, Tuple, Any
 
-OPENSSF_URL = "https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html"
-DB_FILE = "scraped-db.json"
 
-# returns a BeautifulSoup object on successful scraping, else None
-def scrape_document(url):
+OPENSSF_URL = ("https://best.openssf.org/Compiler-Hardening-Guides/"
+                "Compiler-Options-Hardening-Guide-for-C-and-C++.html")
+DB_FILE = "compiler-options.json"
+
+
+def scrape_document(url: str) -> Optional[BeautifulSoup]:
+    """Scrape the document from the given URL."""
     response = requests.get(url)
     if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        return soup
-    else:
-        print("Failed to fetch HTML content")
+        return BeautifulSoup(response.text, 'html.parser')
+    print("Failed to fetch HTML content")
+    return None
+
+# Assumes version date is in the first paragraph element
+def extract_version_from_soup(soup: BeautifulSoup) -> Optional[str]:
+    """Extract version date from the document's subtitle."""
+    subtitle = soup.find('p').get_text()
+    if not subtitle:
+        print("No subtitle found in the document")
         return None
 
-# assuming version is in the first paragraph element
-def extract_version_from_soup(soup):
-    subtitle = soup.find('p').get_text()
-    version = ""
     date_pattern = r'\b\d{4}-\d{2}-\d{2}\b'
-    if subtitle:
-        match = re.search(date_pattern, subtitle)
-        if match:
-            date = match.group(0)
-            return date
-        else:
-            print("No version date found in the subtitle of document.")
-    else:
-        print("No subtitle found in the document")
+    match = re.search(date_pattern, subtitle)
+    if not match:
+        print("No version date found in the subtitle of document.")
+        return None
 
-def extract_tables_from_soup(soup):
-    # find all <table> tags
-    tables = soup.find_all('table')
-    return tables
+    version_date = match.group(0)
+    return version_date
 
-def table_to_dicts(table):
-    # table headers
+
+def table_to_dicts(table: BeautifulSoup) -> List[Dict[str, str]]:
+    """Convert a BeautifulSoup table to a list of dictionaries."""
+    # get table headers
     headers = [header.get_text() for header in table.find_all('th')]
-    # table rows
-    rows = table.find_all('tr')[1:]  # Skip the header row
-    # rows to dictionaries
+    # get table rows
+    rows = table.find_all('tr')[1:]  # Skip the header row, start from index 1
+
+    # convert rows to dictionaries
     data = []
     for row in rows:
         row_data = []
@@ -52,104 +54,87 @@ def table_to_dicts(table):
             row_data.append(cell.get_text())
         row_dict = dict(zip(headers, row_data))
         data.append(row_dict)
+
     return data
 
 
-def convert_to_json(table_data):
+def split_description(desc: str) -> Tuple[str, str]:
+    """Split description into main description and prerequisite."""
+    index = desc.find("Requires")
+    if index != -1:
+        return desc[:index], desc[index:]
+    return desc, ""
+
+
+def convert_to_json(table_data: List[Dict[str, str]]) -> List[Dict[str, Any]]:
+    """Convert table data to JSON format."""
     json_data = []
     for entry in table_data:
-        # print(entry)
-        # flags = entry['Compiler Flag'].split(' ')[1:]
         flags = [entry['Compiler Flag']]
         for flag in flags:
-            desc = entry['Description']
-            prereq = ""
-            # extract prerequisite content separately
-            index = desc.find("Requires")
-            if (index != -1):
-                prereq = desc[index:]
-                desc = desc[0:index]
-
+            desc, prereq = split_description(entry['Description'])
             json_entry = {}
             json_entry["opt"] = flag
             json_entry["desc"] = desc
-            if not (prereq == ""):
+            if prereq:
                 json_entry["prereq"] = prereq
             json_entry["requires"] = extract_versions(entry['Supported since'])
 
             json_data.append(json_entry)
     return json_data
 
-def extract_versions(input_string):
-    versions = {}
 
-    # regular expressions 
+def extract_versions(input_string: str) -> Dict[str, str]:
+    """Extract version information of dependencies from the input string."""
+    versions = {}
+    # Regex for various dependencies
     # NOTE: the last version node is assumed to be single digit
     # if you need to support multiple digits, d+ can be added
     # however, it will start including the superscript references in the version number
-    gcc_pattern = re.compile(r'GCC\s+(\d+\.\d+\.\d)')
-    clang_pattern = re.compile(r'Clang\s+(\d+\.\d+\.\d)')
-    binutils_pattern = re.compile(r'Binutils\s+(\d+\.\d+\.\d)')
-    libcpp_pattern = re.compile(r'libc\+\+\s+(\d+\.\d+\.\d)')
-    libstdcpp_pattern = re.compile(r'libstdc\+\+\s+(\d+\.\d+\.\d)')
+    # example: -D_FORTIFY_SOURCE=3
+    version_patterns = {
+        'gcc': r'GCC\s+(\d+\.\d+\.\d)',
+        'clang': r'Clang\s+(\d+\.\d+\.\d)',
+        'binutils': r'Binutils\s+(\d+\.\d+\.\d)',
+        'libc++': r'libc\+\+\s+(\d+\.\d+\.\d)',
+        'libstdc++': r'libstdc\+\+\s+(\d+\.\d+\.\d)'
+    }
 
-    # GCC version
-    gcc_match = gcc_pattern.search(input_string)
-    if gcc_match:
-        versions['gcc'] = gcc_match.group(1)
-
-    # Clang version
-    clang_match = clang_pattern.search(input_string)
-    if clang_match:
-        versions['clang'] = clang_match.group(1)
-
-    # binutils version
-    binutils_match = binutils_pattern.search(input_string)
-    if binutils_match:
-        versions['binutils'] = binutils_match.group(1)
-
-    # libc++ version
-    libcpp_match = libcpp_pattern.search(input_string)
-    if libcpp_match:
-        versions['libc++'] = libcpp_match.group(1)
-
-    # libstdc++ version
-    libstdcpp_match = libstdcpp_pattern.search(input_string)
-    if libstdcpp_match:
-        versions['libstdc++'] = libstdcpp_match.group(1)
+    versions = {}
+    for key, pattern in version_patterns.items():
+        match = re.search(pattern, input_string)
+        if match:
+            versions[key] = match.group(1)
 
     return versions
 
+
 def main():
+    """Main function to scrape and process the document."""
     soup = scrape_document(OPENSSF_URL)
-    if (soup):
-        # extract document version info
-        version = extract_version_from_soup(soup)
-        tables = extract_tables_from_soup(soup)
+    if not soup:
+        print("Error: Unable to scrape document")
+        return
 
-# convert tables to array of dictionaries
-# we only care about tables 1 and 2 for recommended options
-        tables_data = []
-        recommended_data = []
-        table_1 = table_to_dicts(tables[1])
-        table_2 = table_to_dicts(tables[2])
+    # extract document version info
+    version = extract_version_from_soup(soup)
+    # extract all tables from soup: finds all <table> tags
+    tables = soup.find_all('table')
 
-# merge entries
-        for entry in table_1:
-            recommended_data.append(entry)
+    # NOTE: we only care about tables 1 and 2, since those contain recommended options
+    # convert tables to list of dictionaries and merge entries
+    recommended_data = table_to_dicts(tables[1]) + table_to_dicts(tables[2])
 
-        for entry in table_2:
-            recommended_data.append(entry)
+    # convert table to JSON format
+    json_data = convert_to_json(recommended_data)
 
-# convert table format to JSON format
-        json_data = convert_to_json(recommended_data)
+    output_db = {"version": version, "options": {"recommended": json_data}}
 
-        with open(DB_FILE, "w") as fp:
-            output_db = {"version": version, "options": {"recommended": json_data}}
-            json_formatted_str = json.dumps(output_db, indent=4)
-            print("Write compiler options in json:", DB_FILE)
-            # print(json_formatted_str)
-            fp.write(json_formatted_str)
+    with open(DB_FILE, "w") as fp:
+        # json_formatted_str = json.dumps(output_db, indent=4)
+        # fp.write(json_formatted_str)
+        json.dump(output_db, fp, indent=4)
+        print("Write compiler options in json to:", DB_FILE)
 
 
 if __name__ == "__main__":

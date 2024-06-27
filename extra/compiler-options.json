@@ -1,5 +1,5 @@
 {
-    "version": "2024-05-30",
+    "version": "2024-06-13",
     "options": {
         "recommended": [
             {
@@ -49,7 +49,7 @@
                 }
             },
             {
-                "opt": "-Werror ",
+                "opt": "-Werror  ",
                 "desc": "Treat all or selected compiler warnings as errors. Use the blanket form -Werror only during development, not in source distribution.",
                 "requires": {
                     "gcc": "2.95.3",
@@ -82,10 +82,9 @@
                 }
             },
             {
-                "opt": "-D_GLIBCXX_ASSERTIONS -D_LIBCPP_ASSERT",
+                "opt": "-D_GLIBCXX_ASSERTIONS",
                 "desc": "Precondition checks for C++ standard library calls. Can impact performance.",
                 "requires": {
-                    "libc++": "3.3.0",
                     "libstdc++": "6.0.0"
                 }
             },
@@ -203,6 +202,13 @@
                 "requires": {
                     "gcc": "2.95.3",
                     "clang": "2.6.0"
+                }
+            },
+            {
+                "opt": "-fhardened",
+                "desc": "Enable pre-determined set of hardening options in GCC",
+                "requires": {
+                    "gcc": "14.0.0"
                 }
             }
         ]
